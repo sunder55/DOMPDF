@@ -1,0 +1,30 @@
+  // (Optional) Setup the paper size and orientation
+                    $content = do_shortcode('[display-frm-data id=3004591]');
+                    $dompdf = new Dompdf();
+                    $dompdf->setBasePath('http://codepixelz.tech/certificate.png');
+                    $dompdf->setPaper('A4', 'landscape');
+                    $dompdf->loadHtml($content);
+                    
+                    $options = $dompdf->getOptions();
+
+                    $options->setIsRemoteEnabled(true);
+                    $dompdf->setOptions($options);
+
+
+                    // Render the HTML as PDF
+                    $dompdf->render();
+                    $upload_dir = wp_upload_dir(); // Get the WordPress uploads directory
+                    $temp_pdf_path = $upload_dir['basedir'] . '/certificate-' . $user_id . '.pdf';
+
+                    file_put_contents($temp_pdf_path, $dompdf->output());
+                    $attachments = array($temp_pdf_path);
+                    // Define the email parameters
+                    $to = $user_email;
+                    $subject = 'certificate';
+                    $message = 'Please find the PDF attach.';
+                    $headers = array('Content-Type: application/pdf; charset=UTF-8');
+                    wp_mail($to, $subject, $message, $headers, $attachments);
+                    // wp_mail($to, $subject , 'check mail');
+
+                    // Clean up: Remove the temporary PDF file
+                    unlink($temp_pdf_path);
